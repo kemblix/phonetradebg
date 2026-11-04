@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Black Friday Преподписване</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070304;
+  --bg2:#14070a;
+  --red:#e3001b;
+  --red2:#ff2a3f;
+  --red-dk:#8a0012;
+  --gold:#f2b65a;
+  --gold2:#ffd98e;
+  --white:#ffffff;
+  --paper:#f7f3f3;
+  --ink:#141012;
+  --muted:#cdb8bb;
+  --green:#21b04b;
+  --card:rgba(20,6,9,.86);
+  --line:rgba(255,42,63,.55);
+  --font:"Montserrat","Inter","Segoe UI",Arial,sans-serif;
+  --hand:"Caveat","Segoe Print",cursive;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--white);font-family:var(--font);overflow:hidden}
+button{font-family:inherit}
+
+/* ---------- Stage & scaling ---------- */
+#viewport{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#000}
+#deck{position:relative;width:1600px;height:900px;flex:none;transform-origin:center center;overflow:hidden;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 110%,rgba(227,0,27,.45),transparent 70%),
+    radial-gradient(ellipse 45% 40% at 85% 0%,rgba(227,0,27,.25),transparent 70%),
+    linear-gradient(160deg,#120507 0%,#050203 55%,#160609 100%);}
+/* neon streaks */
+.streaks{position:absolute;inset:-200px;pointer-events:none;z-index:0}
+.streak{position:absolute;height:3px;width:700px;border-radius:3px;
+  background:linear-gradient(90deg,transparent,var(--red2),#fff,var(--red2),transparent);
+  box-shadow:0 0 18px 4px rgba(255,30,60,.55);opacity:.55;transform:rotate(-32deg);
+  animation:streak 9s linear infinite}
+@keyframes streak{from{translate:-900px 500px}to{translate:1900px -700px}}
+.confetti{position:absolute;inset:0;pointer-events:none;z-index:1;overflow:hidden}
+.conf{position:absolute;top:-40px;width:10px;height:26px;border-radius:2px;
+  background:linear-gradient(180deg,var(--red2),var(--red-dk));opacity:.75;
+  animation:fall linear infinite}
+@keyframes fall{0%{transform:translateY(-40px) rotate(0) rotateY(0)}100%{transform:translateY(960px) rotate(540deg) rotateY(720deg)}}
+.floor{position:absolute;left:0;right:0;bottom:0;height:150px;z-index:0;pointer-events:none;
+  background:linear-gradient(180deg,transparent,rgba(227,0,27,.12));
+  border-top:1px solid rgba(255,42,63,.25)}
+
+/* ---------- Slides ---------- */
+.slide{position:absolute;inset:0;padding:42px 60px 70px;z-index:2;opacity:0;visibility:hidden;
+  transition:opacity .6s ease,visibility 0s linear .6s,transform .6s ease;transform:scale(1.03)}
+.slide.active{opacity:1;visibility:visible;transform:none;transition:opacity .6s ease,visibility 0s,transform .6s ease}
+.slide.leaving{transform:scale(.97)}
+
+/* entrance animations */
+.a{opacity:0}
+.slide.active .a{animation:var(--an,up) .85s cubic-bezier(.2,.85,.25,1) var(--d,0s) both}
+.a.l{--an:fromLeft}.a.r{--an:fromRight}.a.z{--an:zoom}.a.p{--an:pop}.a.f{--an:fade}.a.dn{--an:fromTop}
+@keyframes up{from{opacity:0;transform:translateY(46px)}to{opacity:1;transform:none}}
+@keyframes fromTop{from{opacity:0;transform:translateY(-46px)}to{opacity:1;transform:none}}
+@keyframes fromLeft{from{opacity:0;transform:translateX(-80px)}to{opacity:1;transform:none}}
+@keyframes fromRight{from{opacity:0;transform:translateX(80px)}to{opacity:1;transform:none}}
+@keyframes zoom{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+@keyframes pop{0%{opacity:0;transform:scale(.3)}70%{opacity:1;transform:scale(1.08)}100%{opacity:1;transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+
+/* fragments (revealed step by step) */
+.frag{display:none}
+.frag.shown{display:block;animation:bubIn .45s cubic-bezier(.2,.9,.3,1.2) both}
+@keyframes bubIn{from{opacity:0;transform:translateY(24px) scale(.94)}to{opacity:1;transform:none}}
+
+/* ---------- Header ---------- */
+.hdr{display:flex;align-items:center;gap:28px;margin-bottom:26px}
+.bf-tag{position:relative;flex:none;padding:10px 26px 10px 40px;border:3px solid var(--red2);border-radius:12px 40px 40px 12px;
+  transform:rotate(-8deg);box-shadow:0 0 16px rgba(255,42,63,.8),inset 0 0 14px rgba(255,42,63,.5);
+  font-weight:900;line-height:.95;letter-spacing:1px;text-transform:uppercase;animation:flicker 4s infinite}
+.bf-tag::before{content:"";position:absolute;left:13px;top:50%;width:12px;height:12px;margin-top:-6px;border-radius:50%;border:3px solid var(--red2)}
+.bf-tag b{display:block;font-size:24px;color:#fff;text-shadow:0 0 8px rgba(255,255,255,.7)}
+.bf-tag span{display:block;font-size:26px;color:var(--red2);text-shadow:0 0 10px var(--red2)}
+@keyframes flicker{0%,18%,22%,62%,64%,100%{opacity:1}20%,63%{opacity:.55}}
+.hdr h2{flex:1;white-space:nowrap;font-size:46px;font-weight:900;letter-spacing:-.5px;padding:12px 30px;border:2px solid var(--line);
+  border-radius:18px;background:rgba(0,0,0,.55);box-shadow:0 0 30px rgba(255,42,63,.25)}
+.hdr h2 em{font-style:normal;color:var(--red2);text-shadow:0 0 14px rgba(255,42,63,.6)}
+.kicker{font-size:18px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold)}
+
+/* ---------- Generic panels ---------- */
+.panel{background:var(--card);border:2px solid var(--line);border-radius:22px;box-shadow:0 0 28px rgba(255,42,63,.22),inset 0 0 30px rgba(255,42,63,.08)}
+.pill{display:inline-flex;align-items:center;gap:12px;background:linear-gradient(180deg,var(--red2),var(--red));color:#fff;
+  font-weight:800;font-size:26px;padding:10px 26px;border-radius:14px;box-shadow:0 6px 20px rgba(227,0,27,.45)}
+.muted{color:var(--muted)}
+.hl{color:var(--red2);font-weight:800}
+.gold{color:var(--gold)}
+.note{position:absolute;left:60px;right:60px;bottom:26px;font-size:15px;color:#9c8a8d;text-align:center}
+
+/* ---------- Ring (marquee circle) ---------- */
+.ring{--s:300px;position:relative;width:var(--s);height:var(--s);border-radius:50%;flex:none;
+  background:radial-gradient(circle,#ff3346 0 62%,#b30016 72%,#7a000e 100%);
+  box-shadow:0 0 0 6px var(--gold),0 0 0 10px #6b2a10,0 0 70px rgba(255,20,50,.7)}
+.ring-in{position:absolute;inset:calc(var(--s)*.15);border-radius:50%;
+  background:radial-gradient(circle at 40% 35%,#fff,#ece6e7 70%,#d6cfd0);
+  box-shadow:0 0 0 5px var(--gold),inset 0 0 20px rgba(0,0,0,.25);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--ink)}
+.ring .ptr{position:absolute;left:50%;top:-14px;width:0;height:0;margin-left:-26px;
+  border-left:26px solid transparent;border-right:26px solid transparent;border-top:44px solid var(--red2);
+  filter:drop-shadow(0 0 0 var(--gold)) drop-shadow(0 3px 0 var(--gold));z-index:2}
+.bulb{position:absolute;left:50%;top:50%;width:calc(var(--s)*.055);height:calc(var(--s)*.055);margin:calc(var(--s)*-.0275);
+  border-radius:50%;background:radial-gradient(circle,#fff 0 30%,#ffe9b8 55%,#ffb347 100%);
+  box-shadow:0 0 10px 3px rgba(255,220,150,.9);animation:blink 1.1s infinite}
+.bulb:nth-child(even){animation-delay:.55s}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25;box-shadow:none}}
+.podium{position:absolute;left:50%;bottom:calc(var(--s)*-.2);width:calc(var(--s)*1.15);height:calc(var(--s)*.26);transform:translateX(-50%);
+  border-radius:50%;background:radial-gradient(ellipse at 50% 30%,#2a0a0e,#0a0304 70%);
+  box-shadow:0 0 0 3px rgba(255,42,63,.7),0 0 40px rgba(255,42,63,.6);z-index:-1}
+
+/* ---------- Wheel ---------- */
+.wheel-wrap{position:relative;width:330px;height:330px}
+.wheel{position:absolute;inset:0;border-radius:50%;
+  background:conic-gradient(from -22.5deg,#d0001a 0 45deg,#1c0b0e 45deg 90deg,#e3001b 90deg 135deg,#7d0010 135deg 180deg,#d0001a 180deg 225deg,#1c0b0e 225deg 270deg,#e3001b 270deg 315deg,#7d0010 315deg 360deg);
+  box-shadow:0 0 0 12px #160608,0 0 0 15px var(--gold),0 0 50px rgba(255,30,60,.6);
+  animation:spin 26s linear infinite}
+.wheel.fast{animation:none;transition:transform 4.2s cubic-bezier(.12,.75,.12,1)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.wheel .seg{position:absolute;left:50%;top:50%;width:110px;margin-left:-55px;text-align:center;font-weight:800;font-size:20px;line-height:1.05;color:#fff;
+  transform-origin:50% 0;}
+.wheel-hub{position:absolute;left:50%;top:50%;width:104px;height:104px;margin:-52px;border-radius:50%;z-index:3;cursor:pointer;border:none;
+  background:radial-gradient(circle at 35% 30%,#ffe2b0,#d29a55 60%,#9b6630);color:#3a1d06;font-weight:900;font-size:15px;letter-spacing:.5px;
+  box-shadow:0 0 0 5px #160608,0 6px 20px rgba(0,0,0,.6)}
+.wheel-ptr{position:absolute;left:50%;top:-30px;margin-left:-17px;width:34px;height:52px;z-index:4;
+  background:linear-gradient(180deg,#ffe2b0,#c98a45);clip-path:polygon(0 0,100% 0,50% 100%);filter:drop-shadow(0 2px 4px #000)}
+.wheel-res{position:absolute;left:0;right:0;bottom:-58px;text-align:center;font-weight:800;font-size:22px;color:var(--gold2);min-height:28px}
+
+/* ---------- Title slide ---------- */
+.title-wrap{position:relative;height:100%}
+.brand{position:absolute;left:0;top:0;font-weight:900;font-size:22px;letter-spacing:4px;color:var(--muted)}
+.big-tag{position:absolute;left:30px;top:70px;transform:rotate(-10deg);padding:20px 50px 20px 80px;border:5px solid var(--red2);border-radius:20px 80px 80px 20px;
+  box-shadow:0 0 30px rgba(255,42,63,.9),inset 0 0 30px rgba(255,42,63,.5);animation:flicker 5s infinite}
+.big-tag::before{content:"";position:absolute;left:26px;top:50%;width:22px;height:22px;margin-top:-11px;border-radius:50%;border:5px solid var(--red2)}
+.big-tag b{display:block;font-size:76px;font-weight:900;line-height:.9;color:#fff;text-shadow:0 0 14px rgba(255,255,255,.8),0 4px 0 #9a9a9a}
+.big-tag span{display:block;font-size:84px;font-weight:900;line-height:.95;color:var(--red2);text-shadow:0 0 18px var(--red2),0 5px 0 var(--red-dk)}
+.t-wheel{position:absolute;left:40px;bottom:90px}
+.t-rings{position:absolute;right:10px;top:290px;display:flex;align-items:flex-end;gap:26px}
+.t-rings .ring:nth-child(2){--s:400px}
+.t-title{position:absolute;left:560px;top:20px;right:0;text-align:right}
+.t-title h1{font-size:46px;font-weight:900;line-height:1.1}
+.t-title h1 em{font-style:normal;color:var(--red2)}
+.t-title p{font-size:22px;color:var(--muted);margin-top:8px}
+.ring-in .rk{font-size:46px;font-weight:900;line-height:1}
+.ring-in .rs{font-size:30px;font-weight:500;margin-top:6px}
+.ring-in .rp{font-size:84px;font-weight:900;color:var(--red);line-height:.95;letter-spacing:-2px}
+.ring-in .rt{font-size:34px;font-weight:900;line-height:1.05}
+.hint{position:absolute;right:0;bottom:-10px;font-size:16px;color:#9c8a8d}
+.hint kbd{display:inline-block;border:1px solid #6d5a5d;border-radius:6px;padding:2px 8px;margin:0 2px;font-family:inherit;color:#ddd}
+
+/* ---------- Steps ---------- */
+.steps{display:grid;grid-template-columns:1fr 70px 1fr 70px 1fr;align-items:stretch;margin-top:20px}
+.step{padding:30px 28px;text-align:center;position:relative}
+.step .num{width:76px;height:76px;margin:-70px auto 16px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:38px;font-weight:900;background:linear-gradient(180deg,var(--red2),var(--red));box-shadow:0 0 0 5px var(--gold),0 0 30px rgba(255,42,63,.8)}
+.step h3{font-size:32px;font-weight:900;margin-bottom:12px}
+.step p{font-size:22px;line-height:1.4;color:#eadfe0}
+.arrow{display:flex;align-items:center;justify-content:center}
+.arrow svg{width:60px;height:60px;filter:drop-shadow(0 0 8px var(--red2))}
+.arrow path{stroke-dasharray:80;stroke-dashoffset:80}
+.slide.active .arrow path{animation:draw .8s ease var(--d,0s) forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.formula{margin:80px auto 0;display:flex;align-items:center;justify-content:center;gap:22px;font-size:30px;font-weight:800;flex-wrap:wrap}
+.formula .box{padding:16px 26px;border-radius:16px;border:2px dashed var(--gold);background:rgba(242,182,90,.08)}
+.formula .op{font-size:44px;color:var(--gold)}
+
+/* ---------- Invoice ---------- */
+.inv-grid{display:grid;grid-template-columns:700px 1fr;gap:50px;align-items:start;margin-top:10px}
+.invoice{position:relative;background:var(--paper);color:var(--ink);border-radius:14px;padding:34px 40px 150px;
+  box-shadow:0 30px 60px rgba(0,0,0,.6),0 0 0 3px rgba(255,42,63,.4);transform:rotate(-1.5deg)}
+.inv-h{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid var(--ink);padding-bottom:14px;margin-bottom:16px}
+.inv-h b{font-size:30px;font-weight:900}
+.inv-h span{font-size:17px;color:#6c5e60}
+.inv-row{display:flex;justify-content:space-between;gap:20px;font-size:22px;padding:12px 0;border-bottom:1px dashed #c9bdbf}
+.inv-row.disc{color:var(--red);font-weight:800}
+.inv-row span:last-child,.inv-total .v{white-space:nowrap}
+.inv-total{display:flex;justify-content:space-between;align-items:center;margin-top:18px;font-size:30px;font-weight:900}
+.inv-total .v{font-size:56px;color:var(--red)}
+.stamp{position:absolute;right:50px;bottom:28px;padding:10px 22px;border:6px solid var(--red);border-radius:12px;color:var(--red);
+  font-weight:900;font-size:34px;text-align:center;line-height:1;transform:rotate(-14deg);opacity:0;}
+.slide.active .stamp{animation:stamp .5s cubic-bezier(.3,1.6,.5,1) 3.1s forwards}
+@keyframes stamp{0%{opacity:0;transform:rotate(-14deg) scale(3)}100%{opacity:.9;transform:rotate(-14deg) scale(1)}}
+.say{padding:22px 26px;margin-bottom:20px;display:flex;gap:20px;align-items:flex-start}
+.say .ico{flex:none;width:58px;height:58px;border-radius:14px;background:linear-gradient(180deg,var(--red2),var(--red));display:flex;align-items:center;justify-content:center}
+.say .ico svg{width:32px;height:32px}
+.say h4{font-size:24px;font-weight:800;margin-bottom:6px}
+.say p{font-size:21px;line-height:1.4;color:#eadfe0}
+.say q{font-family:var(--hand);font-size:31px;color:var(--gold2);quotes:"„" "“"}
+
+/* ---------- Prep slide ---------- */
+.prep{display:grid;grid-template-columns:600px 1fr;gap:40px}
+.checks{padding:26px 30px}
+.chk{display:flex;gap:18px;align-items:center;padding:13px 0;border-bottom:1px solid rgba(255,255,255,.08);font-size:22px}
+.chk:last-child{border-bottom:none}
+.chk i{flex:none;width:44px;height:44px;border-radius:50%;border:3px solid var(--red2);display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:900;color:var(--red2);font-size:20px}
+.chk small{display:block;font-size:17px;color:var(--muted);margin-top:3px}
+.branches{display:grid;grid-template-columns:1fr 1fr;gap:28px;position:relative}
+.branch{padding:28px 28px 24px;position:relative}
+.branch h3{font-size:34px;font-weight:900;margin-bottom:6px}
+.branch .sub{font-size:19px;color:var(--gold);font-weight:700;margin-bottom:16px;letter-spacing:.5px}
+.branch ul{list-style:none}
+.branch li{font-size:21px;line-height:1.35;padding:8px 0 8px 30px;position:relative}
+.branch li::before{content:"";position:absolute;left:4px;top:17px;width:12px;height:12px;border-radius:50%;background:var(--red2);box-shadow:0 0 8px var(--red2)}
+.branch .plus{margin-top:16px;padding:14px 18px;border-radius:14px;background:rgba(227,0,27,.18);border:1px solid var(--line);font-size:21px;font-weight:700}
+.q-top{grid-column:1/-1;text-align:center;font-size:26px;font-weight:800;padding:14px;border-radius:16px;border:2px dashed var(--gold);color:var(--gold2)}
+
+/* ---------- Timeline ---------- */
+.tl{position:relative;margin-top:120px}
+.tl-line{position:absolute;left:90px;right:90px;top:46px;height:6px;border-radius:6px;background:rgba(255,255,255,.1);overflow:hidden}
+.tl-line::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,var(--red),var(--gold),var(--red2));transform-origin:left;transform:scaleX(0);box-shadow:0 0 14px var(--red2)}
+.slide.active .tl-line::after{animation:grow 3.2s ease .3s forwards}
+@keyframes grow{to{transform:scaleX(1)}}
+.tl-nodes{display:grid;grid-template-columns:repeat(5,1fr);gap:20px;position:relative}
+.tl-node{text-align:center}
+.tl-node .dot{width:96px;height:96px;margin:0 auto 22px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:#1a080b;border:4px solid var(--red2);box-shadow:0 0 24px rgba(255,42,63,.7);font-size:40px;font-weight:900}
+.tl-node h4{font-size:26px;font-weight:900;margin-bottom:10px}
+.tl-node p{font-size:19px;color:var(--muted);line-height:1.35;min-height:80px}
+.tl-node q{display:block;margin-top:12px;padding:14px 14px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
+  font-family:var(--hand);font-size:27px;line-height:1.1;color:var(--gold2);quotes:"„" "“"}
+
+/* ---------- Case slide ---------- */
+.case{display:grid;grid-template-columns:580px 370px 1fr;gap:22px;height:486px}
+.case-col{display:flex;flex-direction:column;gap:22px}
+.pcard{background:var(--paper);color:var(--ink);border-radius:18px;padding:16px 20px;min-height:0;overflow:hidden;display:flex;gap:18px;
+  box-shadow:0 0 0 3px rgba(255,42,63,.6),0 0 30px rgba(255,42,63,.35);flex:1}
+.pcard .dev{flex:none;width:86px;display:flex;align-items:center;justify-content:center}
+.pcard .dev svg{width:80px;height:auto}
+.pcard .info{flex:1;font-size:17px;line-height:1.5}
+.pcard .info b.t{display:block;font-size:20px;font-weight:800;margin-bottom:4px}
+.pcard .lbl{color:#6b5d60}
+.pcard .red{color:var(--red);font-weight:700}
+.pcard .grn{color:var(--green);font-weight:800}
+.pcard .promo{margin-top:8px;display:inline-block;border:2px solid var(--red);border-radius:10px;padding:5px 12px;font-size:15px;font-weight:600;background:#fff}
+.pcard .fee{font-weight:800;font-size:19px}
+.act{padding:18px 20px;flex:1;min-height:0}
+.act .pill{font-size:23px;padding:8px 20px;margin-bottom:16px}
+.act li{list-style:none;font-size:20px;line-height:1.35;padding:7px 0 7px 30px;position:relative}
+.act li::before{content:"";position:absolute;left:4px;top:15px;width:13px;height:13px;border-radius:50%;background:var(--red2);box-shadow:0 0 10px var(--red2)}
+.save{padding:16px 18px;display:flex;flex-direction:column}
+.save-h{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.save-h .coin{width:62px;height:62px;border-radius:50%;background:linear-gradient(180deg,var(--red2),var(--red));display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 4px rgba(255,255,255,.15),0 0 20px var(--red2)}
+.save-h .coin svg{width:34px}
+.save-h .pill{font-size:22px;padding:10px 18px;flex:1;white-space:nowrap}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:14px;flex:1}
+.tile{border:2px solid var(--line);border-radius:16px;background:rgba(0,0,0,.45);text-align:center;padding:14px 10px;
+  box-shadow:inset 0 0 22px rgba(255,42,63,.2),0 0 14px rgba(255,42,63,.25);display:flex;flex-direction:column;align-items:center;justify-content:center}
+.tile svg{width:46px;height:46px;margin-bottom:4px}
+.tile .n{font-size:40px;font-weight:900;line-height:1.05}
+.tile .n small{font-size:22px;font-weight:700}
+.tile .d{font-size:16px;line-height:1.25;color:#eadfe0;margin-top:2px}
+.tiles.six{gap:10px}
+.tiles.six .tile{padding:6px 8px}
+.tiles.six .tile .d{font-size:14px}
+.tiles.six .tile .n{font-size:30px}
+.tiles.six .tile svg{width:30px;height:30px;margin-bottom:0}
+.tips{position:absolute;left:60px;right:60px;bottom:74px;display:flex;align-items:center;gap:26px;padding:16px 26px}
+.tips .pill{font-size:28px;flex:none}
+.tips .pill svg{width:30px}
+.tips h4{font-size:22px;font-weight:800;margin-bottom:6px}
+.tips ul{columns:2;column-gap:40px;list-style:none}
+.tips li{font-size:17px;line-height:1.45;padding-left:22px;position:relative;break-inside:avoid}
+.tips li::before{content:"";position:absolute;left:2px;top:8px;width:10px;height:10px;border-radius:50%;background:var(--red2)}
+
+/* ---------- Dialogue ---------- */
+.dlg{display:grid;grid-template-columns:520px 1fr;gap:34px;height:680px}
+.ctx{padding:24px 26px;display:flex;flex-direction:column;gap:14px}
+.ctx h3{font-size:26px;font-weight:900}
+.ctx .facts{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:19px}
+.ctx .facts dt{color:var(--muted)}
+.ctx .facts dd{font-weight:700}
+.ctx .goal{padding:14px 16px;border-radius:14px;background:rgba(227,0,27,.18);border:1px solid var(--line);font-size:20px;line-height:1.35}
+.ctx .goal b{color:var(--gold2)}
+.chips{display:flex;flex-wrap:wrap;gap:10px}
+.chip{padding:8px 14px;border-radius:30px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.18);font-size:18px;font-weight:700}
+.chip b{color:var(--red2)}
+.tip{margin-top:auto;display:flex;gap:14px;align-items:flex-start;padding:16px;border-radius:16px;background:linear-gradient(135deg,rgba(242,182,90,.18),rgba(242,182,90,.05));border:2px solid var(--gold)}
+.tip svg{flex:none;width:38px;height:38px}
+.tip p{font-size:19px;line-height:1.35}
+.tip p b{color:var(--gold2)}
+.chat{padding:22px 26px;display:flex;flex-direction:column;justify-content:flex-end;gap:12px;overflow:hidden;-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 70px);mask-image:linear-gradient(180deg,transparent 0,#000 70px)}
+.bub{flex:none;max-width:84%;padding:13px 20px;border-radius:22px;font-size:20px;line-height:1.38;position:relative}
+.bub .who{display:block;font-size:14px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:3px;opacity:.85}
+.bub.tk{align-self:flex-end;background:linear-gradient(135deg,var(--red2),var(--red));border-bottom-right-radius:6px;box-shadow:0 6px 18px rgba(227,0,27,.4)}
+.bub.cl{align-self:flex-start;background:#f4eeef;color:var(--ink);border-bottom-left-radius:6px}
+.bub.cl .who{color:#7a6a6d}
+.bub b{font-weight:800}
+.bub.tk b{color:var(--gold2)}
+.bub.cl b{color:var(--red)}
+.chat-hint{font-size:15px;color:#8f7c80;text-align:center}
+
+/* ---------- Objections ---------- */
+.objs{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:6px}
+.obj{height:300px;perspective:1200px;cursor:pointer}
+.obj-in{position:relative;width:100%;height:100%;transition:transform .8s cubic-bezier(.3,.8,.25,1);transform-style:preserve-3d}
+.obj.flip .obj-in{transform:rotateY(180deg)}
+.obj-face{position:absolute;inset:0;border-radius:20px;backface-visibility:hidden;-webkit-backface-visibility:hidden;padding:24px 26px;display:flex;flex-direction:column}
+.obj-front{background:var(--card);border:2px solid var(--line);box-shadow:0 0 24px rgba(255,42,63,.25);justify-content:center;text-align:center}
+.obj-front .qmark{font-size:64px;font-weight:900;color:var(--red2);line-height:1;text-shadow:0 0 16px var(--red2)}
+.obj-front p{font-size:27px;font-weight:800;line-height:1.25;margin-top:12px}
+.obj-front small{margin-top:14px;font-size:15px;color:#8f7c80}
+.obj-back{background:var(--paper);color:var(--ink);transform:rotateY(180deg);border:3px solid var(--red)}
+.obj-back h5{font-size:15px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--red);margin-bottom:8px}
+.obj-back p{font-size:20px;line-height:1.38}
+.obj-back p b{color:var(--red)}
+
+/* ---------- Calculator ---------- */
+.calc{display:grid;grid-template-columns:560px 1fr;gap:40px}
+.calc-in{padding:28px 30px;display:flex;flex-direction:column;gap:20px}
+.fld label{display:block;font-size:19px;font-weight:700;color:var(--muted);margin-bottom:8px}
+.fld .row{display:flex;align-items:center;gap:12px}
+.fld input[type=number]{width:170px;font:800 30px var(--font);color:#fff;background:rgba(0,0,0,.5);border:2px solid var(--line);border-radius:12px;padding:8px 14px;outline:none}
+.fld input[type=number]:focus{border-color:var(--gold)}
+.fld input[type=range]{flex:1;accent-color:var(--red2)}
+.fld .u{font-size:26px;font-weight:800}
+.presets{display:flex;flex-wrap:wrap;gap:10px}
+.presets button{cursor:pointer;padding:9px 16px;border-radius:30px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.06);color:#fff;font-size:17px;font-weight:700}
+.presets button.on{background:var(--red);border-color:var(--red2);box-shadow:0 0 14px var(--red2)}
+.calc-out{padding:30px 34px;display:flex;flex-direction:column;gap:24px}
+.big-num{display:flex;align-items:baseline;gap:16px}
+.big-num .v{font-size:120px;font-weight:900;line-height:1;color:var(--red2);text-shadow:0 0 30px rgba(255,42,63,.6)}
+.big-num .t{font-size:30px;font-weight:800}
+.months{display:flex;flex-wrap:wrap;gap:8px}
+.mo{width:46px;height:46px;border-radius:10px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#8f7c80;transition:all .3s}
+.mo.on{background:linear-gradient(180deg,var(--red2),var(--red));color:#fff;border-color:var(--red2);box-shadow:0 0 12px rgba(255,42,63,.7);transform:scale(1.04)}
+.calc-sum{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.calc-sum div{padding:16px;border-radius:16px;border:1px solid var(--line);background:rgba(0,0,0,.4);text-align:center}
+.calc-sum b{display:block;font-size:36px;font-weight:900}
+.calc-sum span{font-size:16px;color:var(--muted)}
+.calc-say{font-family:var(--hand);font-size:32px;color:var(--gold2);line-height:1.15}
+
+/* ---------- Checklist ---------- */
+.cl-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px 40px;margin-top:10px}
+.cl-item{display:flex;gap:20px;align-items:center;padding:18px 22px;border-radius:18px;background:var(--card);border:2px solid rgba(255,42,63,.35)}
+.cl-item .box{flex:none;width:52px;height:52px;border-radius:14px;border:3px solid var(--red2);display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.4)}
+.cl-item .box svg{width:34px;height:34px}
+.cl-item .box path{stroke-dasharray:40;stroke-dashoffset:40}
+.slide.active .cl-item .box path{animation:draw .5s ease var(--dc,0s) forwards}
+.cl-item p{font-size:23px;line-height:1.3;font-weight:600}
+.cl-item p small{display:block;font-size:17px;color:var(--muted);font-weight:500;margin-top:3px}
+
+/* ---------- Final ---------- */
+.final{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:26px}
+.final h1{font-size:74px;font-weight:900;line-height:1.05;max-width:1300px}
+.final h1 em{font-style:normal;color:var(--red2);text-shadow:0 0 24px rgba(255,42,63,.7)}
+.final .eq{display:flex;align-items:center;gap:16px;font-size:26px;font-weight:800;flex-wrap:wrap;justify-content:center}
+.final .eq span.box{padding:14px 26px;border-radius:40px;background:rgba(255,255,255,.06);border:2px solid var(--line)}
+.final .eq .op{color:var(--gold);font-size:40px}
+.final .eq .box.win{background:linear-gradient(180deg,var(--red2),var(--red));border-color:var(--gold);box-shadow:0 0 30px var(--red2)}
+
+/* ---------- Chrome (nav) ---------- */
+#progress{position:absolute;left:0;top:0;height:5px;background:linear-gradient(90deg,var(--red),var(--gold));box-shadow:0 0 10px var(--red2);z-index:10;transition:width .5s ease}
+#nav{position:absolute;right:24px;bottom:18px;z-index:10;display:flex;align-items:center;gap:10px}
+#nav button{width:46px;height:46px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.6);color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+#nav button:hover{border-color:var(--red2);box-shadow:0 0 12px var(--red2)}
+#nav button.on{background:var(--red);border-color:var(--red2)}
+#counter{min-width:70px;text-align:center;font-weight:700;font-size:17px;color:#bfaeb1}
+#nav svg{width:20px;height:20px}
+</style>
+</head>
+<body>
+<div id="viewport">
+<div id="deck">
+  <div class="streaks" id="streaks"></div>
+  <div class="confetti" id="confetti"></div>
+  <div class="floor"></div>
+  <div id="progress"></div>
+
+  <!-- ============ 1. TITLE ============ -->
+  <section class="slide" data-title="Начало">
+    <div class="title-wrap">
+      <div class="big-tag a l" style="--d:.1s"><b>BLACK</b><span>FRIDAY</span></div>
+      <div class="t-title">
+        <div class="kicker a dn" style="--d:.3s">Търговски практики · обучение за ТК</div>
+        <h1 class="a dn" style="--d:.45s">Преподписване на <em>Premium</em> и <em>НАД (Above)</em> таб</h1>
+        <p class="a dn" style="--d:.6s">+ 100% отстъпка от 1 такса в следващата фактура → нова услуга и устройство</p>
+      </div>
+      <div class="t-wheel a z" style="--d:.5s">
+        <div class="wheel-wrap" id="wheelWrap">
+          <div class="wheel-ptr"></div>
+          <div class="wheel" id="wheel"></div>
+          <button class="wheel-hub" id="wheelHub" title="Завърти">ЗАВЪРТИ</button>
+          <div class="wheel-res" id="wheelRes"></div>
+        </div>
+      </div>
+      <div class="t-rings">
+        <div class="ring a p" style="--d:.8s;--s:290px"><i class="ptr"></i><div class="ring-in"><div class="rk">Premium</div><div class="rs">Promo Tab</div></div><div class="podium"></div></div>
+        <div class="ring a p" style="--d:1.05s"><i class="ptr"></i><div class="ring-in"><div class="rp">100%</div><div class="rt">ОТСТЪПКА<br>ОТ 1 ТАКСА</div></div><div class="podium"></div></div>
+        <div class="ring a p" style="--d:1.3s;--s:290px"><i class="ptr"></i><div class="ring-in"><div class="rk">Above</div><div class="rs">НАД Promo Tab</div></div><div class="podium"></div></div>
+      </div>
+      <div class="hint a f" style="--d:2s">Напред: <kbd>→</kbd> <kbd>Space</kbd> · Назад: <kbd>←</kbd> · Цял екран: <kbd>F</kbd> · Авто: <kbd>A</kbd></div>
+    </div>
+  </section>
+
+  <!-- ============ 2. OFFER ============ -->
+  <section class="slide" data-title="Офертата">
+    <div class="hdr"><div class="bf-tag a l"><b>Black</b><span>Friday</span></div><h2 class="a r" style="--d:.1s">Офертата в <em>3 стъпки</em></h2></div>
+    <div class="steps" style="margin-top:70px">
+      <div class="step panel a" style="--d:.3s"><div class="num">1</div><h3>Преподписваме</h3><p>Клиентът подновява договора си с <b class="hl">Premium таб</b> или <b class="hl">НАД (Above) таб</b> — според профила му.</p></div>
+      <div class="arrow" style="--d:.9s"><svg viewBox="0 0 60 60" fill="none"><path d="M6 30h44M36 16l14 14-14 14" stroke="#ff2a3f" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="step panel a" style="--d:1.0s"><div class="num">2</div><h3>100% отстъпка</h3><p>От <b class="hl">1 месечна такса</b>, видима в <b>следващата фактура</b>. Заедно с prorate клиентът спестява реални пари.</p></div>
+      <div class="arrow" style="--d:1.6s"><svg viewBox="0 0 60 60" fill="none"><path d="M6 30h44M36 16l14 14-14 14" stroke="#ff2a3f" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="step panel a" style="--d:1.7s"><div class="num">3</div><h3>Инвестираме спестеното</h3><p>В <b class="hl">нова услуга</b> (Net + TV, FBB, Port In, NetBox Backup, ICT) или <b class="hl">устройство</b> с до 200€ отстъпка.</p></div>
+    </div>
+    <div class="formula">
+      <span class="box a p" style="--d:2.4s">Prorate</span><span class="op a f" style="--d:2.6s">+</span>
+      <span class="box a p" style="--d:2.7s">1 месечна такса</span><span class="op a f" style="--d:2.9s">=</span>
+      <span class="box a p" style="--d:3.0s;border-color:var(--red2);background:rgba(227,0,27,.2)">Спестена сума</span><span class="op a f" style="--d:3.2s">→</span>
+      <span class="box a p" style="--d:3.3s">X месеца нова услуга</span>
+    </div>
+  </section>
+
+  <!-- ============ 3. INVOICE ============ -->
+  <section class="slide" data-title="Следващата фактура">
+    <div class="hdr"><div class="bf-tag a l"><b>Black</b><span>Friday</span></div><h2 class="a r" style="--d:.1s">Как изглежда в <em>следващата фактура</em></h2></div>
+    <div class="inv-grid">
+      <div class="invoice a l" style="--d:.3s">
+        <div class="inv-h"><b>Фактура</b><span>следващ отчетен период</span></div>
+        <div class="inv-row a f" style="--d:.8s"><span>Месечна такса (нов план, Premium таб)</span><span>12.26 €</span></div>
+        <div class="inv-row a f" style="--d:1.2s"><span>Допълнителни услуги</span><span>0.00 €</span></div>
+        <div class="inv-row disc a l" style="--d:1.8s"><span>Black Friday: 100% отстъпка от 1 такса</span><span>−12.26 €</span></div>
+        <div class="inv-total a f" style="--d:2.2s"><span>За плащане по таксата</span><span class="v"><span data-count="0" data-from="12.26" data-dec="2" data-delay="2300">12.26</span> €</span></div>
+        <div class="stamp">100%<br><small style="font-size:20px">ОТСТЪПКА</small></div>
+      </div>
+      <div>
+        <div class="say panel a r" style="--d:.6s"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M4 5h16v11H8l-4 4z"/></svg></div>
+          <div><h4>Кажи го просто</h4><q>Следващата Ви месечна такса е изцяло за наша сметка.</q></div></div>
+        <div class="say panel a r" style="--d:1.1s"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></div>
+          <div><h4>Кажи кога</h4><p>Отстъпката се вижда в <b>следващата фактура</b> след преподписването — предупреди клиента, за да няма въпроси после.</p></div></div>
+        <div class="say panel a r" style="--d:1.6s"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M12 3v18M17 7H9.5a3 3 0 0 0 0 6h5a3 3 0 0 1 0 6H6"/></svg></div>
+          <div><h4>Превърни я в стойност</h4><q>С тези пари покривате 7 месеца интернет и телевизия вкъщи.</q></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4. PREP / DECISION ============ -->
+  <section class="slide" data-title="Подготовка">
+    <div class="hdr"><div class="bf-tag a l"><b>Black</b><span>Friday</span></div><h2 class="a r" style="--d:.1s">30 секунди в профила: <em>Premium</em> или <em>НАД</em>?</h2></div>
+    <div class="prep">
+      <div class="checks panel a l" style="--d:.2s">
+        <div class="kicker" style="margin-bottom:8px">Провери преди разговора</div>
+        <div class="chk a f" style="--d:.5s"><i>1</i><div>Крайна дата на договора<small>колко остава — дни/месеци до края</small></div></div>
+        <div class="chk a f" style="--d:.7s"><i>2</i><div>Риск за прекратяване<small><span style="color:#3ad36b;font-weight:700">Low</span> или <span class="hl">High</span></small></div></div>
+        <div class="chk a f" style="--d:.9s"><i>3</i><div>Поведенчески сегмент<small>Early_Retention / Retention</small></div></div>
+        <div class="chk a f" style="--d:1.1s"><i>4</i><div>Средна месечна сметка vs такса<small>има ли място за надграждане</small></div></div>
+        <div class="chk a f" style="--d:1.3s"><i>5</i><div>Какво липсва на клиента<small>FIX? мобилна? ТВ? второ устройство?</small></div></div>
+      </div>
+      <div class="branches">
+        <div class="q-top a dn" style="--d:1.5s">Кой таб и какво добавяме?</div>
+        <div class="branch panel a l" style="--d:1.8s">
+          <h3>Premium таб</h3><div class="sub">RETENTION · ЗАДЪРЖАНЕ</div>
+          <ul><li>Договорът изтича скоро (1–3 месеца)</li><li>Риск <span class="hl">High</span>, сегмент Retention</li><li>Устройството е за смяна</li></ul>
+          <div class="plus">+ устройство от кампания „Black Friday“ (до 200€ отстъпка)</div>
+        </div>
+        <div class="branch panel a r" style="--d:2.1s">
+          <h3>НАД (Above) таб</h3><div class="sub">EARLY RETENTION · РАЗВИТИЕ</div>
+          <ul><li>Има време до края на договора</li><li>Риск <span style="color:#3ad36b;font-weight:800">Low</span>, сегмент Early_Retention</li><li>Липсва услуга в портфейла</li></ul>
+          <div class="plus">+ нова услуга: Net + TV, FBB, Port In, NetBox Backup</div>
+        </div>
+      </div>
+    </div>
+    <div class="note">Ориентир по примерите от кампанията — финалният избор е според офертите, видими в профила на клиента.</div>
+  </section>
+
+  <!-- ============ 5. CONVERSATION FLOW ============ -->
+  <section class="slide" data-title="Структура на разговора">
+    <div class="hdr"><div class="bf-tag a l"><b>Black</b><span>Friday</span></div><h2 class="a r" style="--d:.1s">Структура на разговора в <em>5 стъпки</em></h2></div>
+    <div class="tl">
+      <div class="tl-line"></div>
+      <div class="tl-nodes">
+        <div class="tl-node a" style="--d:.4s"><div class="dot">1</div><h4>Повод</h4><p>Започни с подаръка, не с договора.</p><q>Имаме Black Friday изненада за Вас.</q></div>
+        <div class="tl-node a" style="--d:1.0s"><div class="dot">2</div><h4>Въпроси</h4><p>Открий нуждата: дом, семейство, телефон.</p><q>Какъв интернет ползвате вкъщи?</q></div>
+        <div class="tl-node a" style="--d:1.6s"><div class="dot">3</div><h4>Оферта</h4><p>Преподписване + 100% отстъпка от 1 такса.</p><q>Следващата такса е за наша сметка.</q></div>
+        <div class="tl-node a" style="--d:2.2s"><div class="dot">4</div><h4>Стойност</h4><p>Спестеното → услуга или устройство.</p><q>Това са 7 месеца Net + TV.</q></div>
+        <div class="tl-node a" style="--d:2.8s"><div class="dot">5</div><h4>Затваряне</h4><p>Подпис + напомняне за фактурата.</p><q>Ще го видите в следващата фактура.</q></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 6. CASE: VOICE ============ -->
+  <section class="slide" data-title="Пример: Voice">
+    <div class="hdr"><div class="bf-tag a l"><b>Black</b><span>Friday</span></div><h2 class="a r" style="--d:.1s">Клиент с <em>Voice услуга</em></h2></div>
+    <div class="case">
+      <div class="case-col">
+        <div class="pcard a l" style="--d:.3s"><div class="dev">{{phone}}</div><div class="info">
+          <b class="t">Samsung Galaxy A36 5G (2024)</b>
+          <span class="lbl">Крайна дата:</span> <span class="red">2.07.2027 г.</span><br>
+          <span class="lbl">Риск:</span> <span class="grn">Low</span> · <span class="lbl">Сегмент:</span> Early_Retention_CVM_18<br>
+          <span class="lbl">Месечна такса:</span> <span class="fee">15.34 €</span> · <span class="lbl">Ср. сметка:</span> 15.61 €
+          <div class="promo">НАД ПП Плюс: Bundle_19 + FBB</div></div></div>
+        <div class="pcard a l" style="--d:.6s"><div class="dev">{{phone}}</div><div class="info">
+          <b class="t">Samsung Galaxy A16 5G (2024)</b>
+          <span class="lbl">Крайна дата:</span> <span class="red">26.12.2026 г. (1 м. 28 дни)</span><br>
+          <span class="lbl">Риск:</span> <span class="red">High</span> · <span class="lbl">Сегмент:</span> Retention_CVM_13<br>
+          <span class="lbl">Месечна такса:</span> <span class="fee">12.26 €</span> · <span class="lbl">Ср. сметка:</span> 13.82 €
+          <div class="promo">Premium-Unlimited_21_Sw24m + FBB</div></div></div>
+      </div>
+      <div class="case-col">
+        <div class="act panel a" style="--d:.9s"><span class="pill">Действия на ТК</span><ul><li>Преподписване на <b>НАД таб</b></li><li>Добавяме <b>интернет и телевизия</b> на клиента</li></ul></div>
+        <div class="act panel a" style="--d:1.2s"><span class="pill">Действия на ТК</span><ul><li>Преподписване на <b>Premium TAB</b></li><li>Добавяме <b>устройство</b> от кампания „Black Friday“</li></ul></div>
+      </div>
+      <div class="save panel a r" style="--d:1.4s">
+        <div class="save-h"><div class="coin">{{dollar}}</div><span class="pill">Клиентът спестява:</span></div>
+        <div class="tiles">
+          <div class="tile a p" style="--d:1.8s">{{coins}}<div class="n"><span data-count="50">0</span>€</div><div class="d">от Prorate и първа месечна такса</div></div>
+          <div class="tile a p" style="--d:2.0s">{{phoneIco}}<div class="n"><small>до</small> <span data-count="200">0</span>€</div><div class="d">от устройство</div></div>
+          <div class="tile a p" style="--d:2.2s">{{phoneTv}}<div class="n"><span data-count="7">0</span> <small>такси</small></div><div class="d">двоен пакет Net + TV<br>150 Mbps + 200+ канала</div></div>
+          <div class="tile a p" style="--d:2.4s">{{wifi}}<div class="n"><span data-count="12">0</span> <small>такси</small></div><div class="d">FBB 150 Mbps</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="tips panel a" style="--d:2.7s"><span class="pill">{{bulb}} Tips &amp; Tricks</span><div><h4>Използвай спестената сума:</h4><ul>
+      <li>При отказ на клиента за преподписване / ниво ЕГН;</li><li>При възражение за по-висока такса;</li>
+      <li>При покупка на устройство / комбинация от устройства;</li><li>При продажба на допълнителна услуга.</li></ul></div></div>
+  </section>
+
+  <!-- ============ 7. DIALOGUE: Premium + device ============ -->
+  <section class="slide" data-title="Практика: Premium + устройство">
+    <div class="hdr"><div class="bf-tag a l"><b>Black</b><span>Friday</span></div><h2 class="a r" style="--d:.1s">Практика 1: <em>Premium TAB</em> + устройство</h2></div>
+    <div class="dlg">
+      <div class="ctx panel a l" style="--d:.2s">
+        <h3>Клиент: Galaxy A16 · Voice</h3>
+        <dl class="facts"><dt>Договор до</dt><dd class="hl">26.12.2026 (1 м. 28 дни)</dd><dt>Риск</dt><dd class="hl">High</dd><dt>Такса</dt><dd>12.26 €</dd><dt>Сегмент</dt><dd>Retention_CVM_13</dd></dl>
+        <div class="goal"><b>Цел:</b> задържане преди края на договора + продажба на ново устройство.</div>
+        <div class="chips"><span class="chip">спестява <b>~50€</b></span><span class="chip">устройство <b>до −200€</b></span></div>
+        <div class="chat-hint">→ / Space показва следващата реплика в чата</div>
+        <div class="tip">{{bulbGold}}<p><b>High риск + близка крайна дата</b> → започни с подаръка, а не с цената. Клиентът вероятно вече сравнява оферти.</p></div>
+      </div>
+      <div class="chat panel a r" style="--d:.4s">
+        <div class="bub tk frag"><span class="who">ТК</span>Здравейте! Виждам, че договорът Ви изтича след по-малко от 2 месеца — и точно сега имаме <b>Black Friday</b> изненада за Вас.</div>
+        <div class="bub cl frag"><span class="who">Клиент</span>Всъщност мислех да проверя и при другите оператори.</div>
+        <div class="bub tk frag"><span class="who">ТК</span>Разбирам. Ако подновим сега с <b>Premium таб</b>, следващата Ви месечна такса е <b>100% за наша сметка</b>. С prorate спестявате около <b>50€</b>.</div>
+        <div class="bub cl frag"><span class="who">Клиент</span>Добре, но <b>телефонът ми вече е бавен</b>.</div>
+        <div class="bub tk frag"><span class="who">ТК</span>Тогава насочваме спестеното към ново устройство от кампанията — с <b>до 200€ отстъпка</b>. Елате да Ви покажа моделите.</div>
+        <div class="bub cl frag"><span class="who">Клиент</span>Звучи добре. Колко ще ми излезе месечно?</div>
+        <div class="bub tk frag"><span class="who">ТК</span>Ето сметката… А отстъпката от таксата ще видите <b>в следващата си фактура</b>. Подписваме ли?</div>
+              </div>
+    </div>
+  </section>
+
+  <!-- ============ 8. DIALOGUE: НАД + Net/TV ============ -->
+  <section class="slide" data-title="Практика: НАД + Net & TV">
+    <div class="hdr"><div class="bf-tag a l"><b>Black</b><span>Friday</span></div><h2 class="a r" style="--d:.1s">Практика 2: <em>НАД таб</em> + интернет и ТВ</h2></div>
+    <div class="dlg">
+      <div class="ctx panel a l" style="--d:.2s">
+        <h3>Клиент: Galaxy A36 · Voice</h3>
+        <dl class="facts"><dt>Договор до</dt><dd>2.07.2027</dd><dt>Риск</dt><dd style="color:#3ad36b">Low</dd><dt>Такса</dt><dd>15.34 €</dd><dt>Сегмент</dt><dd>Early_Retention_CVM_18</dd></dl>
+        <div class="goal"><b>Цел:</b> ранно преподписване + продажба на домашна услуга (FIX).</div>
+        <div class="chips"><span class="chip">спестява <b>~50€</b></span><span class="chip"><b>7</b> такси Net + TV</span><span class="chip"><b>12</b> такси FBB</span></div>
+        <div class="chat-hint">→ / Space показва следващата реплика в чата</div>
+        <div class="tip">{{bulbGold}}<p><b>Low риск = Early Retention.</b> Не продавай отстъпка — продавай стойност за дома и „една фактура за всичко“.</p></div>
+      </div>
+      <div class="chat panel a r" style="--d:.4s">
+        <div class="bub tk frag"><span class="who">ТК</span>Вие сте наш лоялен клиент и за Black Friday можете да подновите <b>предсрочно с НАД таб</b>.</div>
+        <div class="bub cl frag"><span class="who">Клиент</span>Защо да подписвам отсега? Договорът ми е до юли.</div>
+        <div class="bub tk frag"><span class="who">ТК</span>Защото само сега получавате <b>100% отстъпка от една месечна такса</b> — спестявате около <b>50€</b>, без да губите нищо.</div>
+        <div class="bub cl frag"><span class="who">Клиент</span>А какво мога да направя с тях?</div>
+        <div class="bub tk frag"><span class="who">ТК</span>Какъв интернет имате вкъщи? Спестеното покрива <b>7 месечни такси</b> за Net + TV — 150 Mbps и над 200 канала.</div>
+        <div class="bub cl frag"><span class="who">Клиент</span>Имам при друг доставчик, но <b>не съм доволна</b>.</div>
+        <div class="bub tk frag"><span class="who">ТК</span>Тогава прехвърляме и дома при нас — <b>един оператор, една фактура</b>. Ако Ви трябва само интернет, FBB 150 Mbps е покрит за <b>12 такси</b>.</div>
+              </div>
+    </div>
+  </section>
+
+  <!-- ============ 9. CASE: FIX ============ -->
+  <section class="slide" data-title="Пример: FIX">
+    <div class="hdr"><div class="bf-tag a l"><b>Black</b><span>Friday</span></div><h2 class="a r" style="--d:.1s">Клиент с <em>FIX услуга</em></h2></div>
+    <div class="case">
+      <div class="case-col">
+        <div class="pcard a l" style="--d:.3s"><div class="dev">{{house}}</div><div class="info">
+          <b class="t">Net 75 Mbps + TV 200 · Max Sport + Cinema</b>
+          <span class="lbl">Технология:</span> Unlimited Internet · Router Huawei<br>
+          <span class="lbl">Крайна дата:</span> <span class="grn">15.10.2028 г.</span><br>
+          <span class="lbl">Риск:</span> <span class="grn">Low</span><br>
+          <span class="lbl">Месечна такса:</span> <span class="fee">22.74 €</span> · <span class="lbl">Ср. сметка:</span> 68.57 €
+          <div class="promo">НАД: Net-75p200-T2020_1_Sw12m + device</div>
+          <div style="margin-top:14px;padding:10px 14px;border-radius:12px;background:#fff0f1;border:1px dashed var(--red);font-size:16px"><b class="red">Липсва:</b> мобилна услуга при нас → потенциал за <b>Port In</b></div></div></div>
+      </div>
+      <div class="case-col">
+        <div class="act panel a" style="--d:.8s"><span class="pill">Действия на ТК</span><ul><li>Преподписване на <b>НАД таб</b></li><li>Добавяме <b>мобилна услуга</b> на клиента (Port In)</li><li>Предлагаме <b>NetBox Backup</b> / ICT</li></ul></div>
+      </div>
+      <div class="save panel a r" style="--d:1.1s">
+        <div class="save-h"><div class="coin">{{dollar}}</div><span class="pill">Клиентът спестява:</span></div>
+        <div class="tiles">
+          <div class="tile a p" style="--d:1.5s">{{coins}}<div class="n"><span data-count="36">0</span>€</div><div class="d">от Prorate и първа месечна такса</div></div>
+          <div class="tile a p" style="--d:1.7s">{{phoneIco}}<div class="n"><small>до</small> <span data-count="200">0</span>€</div><div class="d">от устройство</div></div>
+          <div class="tile a p" style="--d:1.9s">{{phoneTv}}<div class="n"><span data-count="2">0</span> <small>такси</small></div><div class="d">от мобилна услуга<br>(PORT IN)</div></div>
+          <div class="tile a p" style="--d:2.1s">{{wifi}}<div class="n"><span data-count="18">0</span> <small>такси</small></div><div class="d">от NetBox Backup</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="tips panel a" style="--d:2.4s"><span class="pill">{{bulb}} Tips &amp; Tricks</span><div><h4>Използвай спестената сума:</h4><ul>
+      <li>При отказ на клиента за преподписване / ниво ЕГН;</li><li>При възражение за по-висока такса;</li>
+      <li>При продажба на допълнителна услуга – Port In;</li><li>При продажба на допълнителна услуга – NetBox, ICT.</li></ul></div></div>
+  </section>
+
+  <!-- ============ 10. DIALOGUE: FIX + Port In ============ -->
+  <section class="slide" data-title="Практика: FIX + Port In">
+    <div class="hdr"><div class="bf-tag a l"><b>Black</b><span>Friday</span></div><h2 class="a r" style="--d:.1s">Практика 3: <em>НАД таб</em> + мобилна услуга</h2></div>
+    <div class="dlg">
+      <div class="ctx panel a l" style="--d:.2s">
+        <h3>Клиент: Net 75 + TV 200 · FIX</h3>
+        <dl class="facts"><dt>Договор до</dt><dd>15.10.2028</dd><dt>Риск</dt><dd style="color:#3ad36b">Low</dd><dt>Такса</dt><dd>22.74 €</dd><dt>Ср. сметка</dt><dd>68.57 €</dd></dl>
+        <div class="goal"><b>Цел:</b> преподписване с НАД таб + <b>Port In</b> на мобилен номер + NetBox Backup.</div>
+        <div class="chips"><span class="chip">спестява <b>~36€</b></span><span class="chip"><b>2</b> такси Port In</span><span class="chip"><b>18</b> такси NetBox Backup</span></div>
+        <div class="chat-hint">→ / Space показва следващата реплика в чата</div>
+        <div class="tip">{{bulbGold}}<p><b>FIX клиент без мобилна услуга</b> е най-лесният Port In: вече ни има доверие за дома.</p></div>
+      </div>
+      <div class="chat panel a r" style="--d:.4s">
+        <div class="bub tk frag"><span class="who">ТК</span>Виждам, че имате интернет и телевизия при нас. За Black Friday можете да подновите с <b>НАД таб</b> и да получите <b>100% отстъпка от една такса</b>.</div>
+        <div class="bub cl frag"><span class="who">Клиент</span>Колко ще спестя?</div>
+        <div class="bub tk frag"><span class="who">ТК</span>Около <b>36€</b> с prorate. А мобилния си номер при кой оператор ползвате?</div>
+        <div class="bub cl frag"><span class="who">Клиент</span>При друг. Не знам дали си заслужава да го местя.</div>
+        <div class="bub tk frag"><span class="who">ТК</span>Запазвате номера си, а спестените пари покриват <b>2 месечни такси</b> на мобилния план. И всичко е в <b>една фактура</b>.</div>
+        <div class="bub cl frag"><span class="who">Клиент</span>А ако спре интернетът вкъщи? Работя от дома.</div>
+        <div class="bub tk frag"><span class="who">ТК</span>Точно за това е <b>NetBox Backup</b> — резервен интернет. Спестеното покрива <b>18 такси</b> за него.</div>
+              </div>
+    </div>
+  </section>
+
+  <!-- ============ 11. CASE: FIX + VOICE ============ -->
+  <section class="slide" data-title="Пример: FIX + Voice">
+    <div class="hdr"><div class="bf-tag a l"><b>Black</b><span>Friday</span></div><h2 class="a r" style="--d:.1s">Клиент с <em>FIX и Voice услуги</em></h2></div>
+    <div class="case">
+      <div class="case-col">
+        <div class="pcard a l" style="--d:.3s"><div class="dev">{{phone}}</div><div class="info">
+          <b class="t">Samsung Galaxy S25 (2025)</b>
+          <span class="lbl">Крайна дата:</span> <span class="red">27.01.2027 г.</span><br>
+          <span class="lbl">Риск:</span> <span class="grn">Low</span><br>
+          <span class="lbl">Месечна такса:</span> <span class="fee">12.26 €</span>
+          <div class="promo">Premium: Unlimited_21_Sw24m + device</div></div></div>
+        <div class="pcard a l" style="--d:.6s"><div class="dev">{{router}}</div><div class="info">
+          <b class="t">FIX · гр. София, кв. Дървеница</b>
+          <span class="lbl">Крайна дата:</span> <span class="red">23.01.2027 г. (2 м. 26 дни)</span><br>
+          <span class="lbl">Месечна такса:</span> <span class="fee">4.48 €</span>
+          <div class="promo">НАД: Net600 + TV200 + 2Sw_24m_21 + WiFi</div></div></div>
+      </div>
+      <div class="case-col">
+        <div class="act panel a" style="--d:.9s"><span class="pill">Действия на ТК</span><ul><li>Преподписване на <b>Premium таб</b> (мобилна)</li></ul></div>
+        <div class="act panel a" style="--d:1.2s"><span class="pill">Действия на ТК</span><ul><li>Преподписване на <b>НАД таб</b> (FIX)</li><li>Надграждане или Port In</li></ul></div>
+      </div>
+      <div class="save panel a r" style="--d:1.4s">
+        <div class="save-h"><div class="coin">{{dollar}}</div><span class="pill">Клиентът спестява:</span></div>
+        <div class="tiles six">
+          <div class="tile a p" style="--d:1.8s">{{coins}}<div class="n"><span data-count="53">0</span>€</div><div class="d">Prorate и първа такса</div></div>
+          <div class="tile a p" style="--d:1.95s">{{phoneIco}}<div class="n"><small>до</small> <span data-count="200">0</span>€</div><div class="d">от устройство</div></div>
+          <div class="tile a p" style="--d:2.1s">{{tvs}}<div class="n"><span data-count="4">0</span> <small>такси</small></div><div class="d">Net + TV 600 Mbps<br>+ 200+ канала</div></div>
+          <div class="tile a p" style="--d:2.25s">{{call}}<div class="n"><span data-count="3">0</span> <small>такси</small></div><div class="d">мобилна услуга (PORT IN)</div></div>
+          <div class="tile a p" style="--d:2.4s">{{wifi}}<div class="n"><span data-count="13">0</span> <small>такси</small></div><div class="d">FBB 150 Mbps</div></div>
+          <div class="tile a p" style="--d:2.55s">{{db}}<div class="n"><span data-count="24">0</span> <small>такси</small></div><div class="d">NetBox Backup</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="tips panel a" style="--d:2.8s"><span class="pill">{{bulb}} Tips &amp; Tricks</span><div><h4>Използвай спестената сума:</h4><ul>
+      <li>При отказ на клиента за преподписване / ниво ЕГН;</li><li>При възражение за по-висока такса;</li>
+      <li>При покупка на устройство / комбинация;</li><li>Доп. услуга – Port In, FIX втори адрес, NetBox, ICT.</li></ul></div></div>
+  </section>
+
+  <!-- ============ 12. DIALOGUE: FIX + Voice ============ -->
+  <section class="slide" data-title="Практика: FIX + Voice">
+    <div class="hdr"><div class="bf-tag a l"><b>Black</b><span>Friday</span></div><h2 class="a r" style="--d:.1s">Практика 4: <em>двойно преподписване</em></h2></div>
+    <div class="dlg">
+      <div class="ctx panel a l" style="--d:.2s">
+        <h3>Клиент: Galaxy S25 + FIX</h3>
+        <dl class="facts"><dt>Мобилна до</dt><dd class="hl">27.01.2027 · 12.26 €</dd><dt>FIX до</dt><dd class="hl">23.01.2027 · 4.48 €</dd><dt>Риск</dt><dd style="color:#3ad36b">Low</dd></dl>
+        <div class="goal"><b>Цел:</b> Premium таб за мобилната + НАД таб за FIX в едно посещение, после cross-sell.</div>
+        <div class="chips"><span class="chip">спестява <b>~53€</b></span><span class="chip"><b>4</b> такси Net+TV 600</span><span class="chip"><b>3</b> такси Port In</span><span class="chip"><b>13</b> FBB</span><span class="chip"><b>24</b> NetBox</span></div>
+        <div class="chat-hint">→ / Space показва следващата реплика в чата</div>
+        <div class="tip">{{bulbGold}}<p><b>Две услуги в едно домакинство</b> = двойна отстъпка и повод да говорим за цялото семейство.</p></div>
+      </div>
+      <div class="chat panel a r" style="--d:.4s">
+        <div class="bub tk frag"><span class="who">ТК</span>Имате и мобилна, и домашна услуга при нас — двата договора изтичат в края на януари. Можем да ги подновим <b>заедно, днес</b>.</div>
+        <div class="bub cl frag"><span class="who">Клиент</span>И какво печеля, ако го направя сега?</div>
+        <div class="bub tk frag"><span class="who">ТК</span>Мобилния — с <b>Premium таб</b>, домашния — с <b>НАД таб</b>. Общо спестявате около <b>53€</b> от prorate и първа такса.</div>
+        <div class="bub cl frag"><span class="who">Клиент</span>Интернетът вкъщи понякога е бавен…</div>
+        <div class="bub tk frag"><span class="who">ТК</span>Надграждаме до <b>Net + TV 600 Mbps</b> — спестеното покрива 4 такси. А ако имате вила или офис — <b>FBB 150 Mbps</b> на втори адрес, 13 такси.</div>
+        <div class="bub cl frag"><span class="who">Клиент</span>Съпругът ми е при друг оператор.</div>
+        <div class="bub tk frag"><span class="who">ТК</span>Прехвърляме и него с <b>Port In</b> — 3 такси покрити от спестеното. Всичко в една фактура, с едно посещение.</div>
+              </div>
+    </div>
+  </section>
+
+  <!-- ============ 13. OBJECTIONS ============ -->
+  <section class="slide" data-title="Възражения">
+    <div class="hdr"><div class="bf-tag a l"><b>Black</b><span>Friday</span></div><h2 class="a r" style="--d:.1s">Възражения → <em>спестената сума</em></h2></div>
+    <div class="objs">
+      <div class="obj a p" style="--d:.3s"><div class="obj-in"><div class="obj-face obj-front"><div class="qmark">?</div><p>„Не искам да преподписвам.“</p><small>кликни за отговор</small></div>
+        <div class="obj-face obj-back"><h5>Отговор</h5><p>„Разбирам. Само за Black Friday следващата Ви такса е <b>изцяло за наша сметка</b> — около 50€, които иначе губите. Условията Ви остават същите или по-добри.“</p></div></div></div>
+      <div class="obj a p" style="--d:.45s"><div class="obj-in"><div class="obj-face obj-front"><div class="qmark">?</div><p>„Новата такса е по-висока.“</p><small>кликни за отговор</small></div>
+        <div class="obj-face obj-back"><h5>Отговор</h5><p>„Нека сметнем: разликата е <b>2€ на месец</b>. Спестените 50€ я покриват за повече от <b>2 години</b> — на практика не плащате повече.“</p></div></div></div>
+      <div class="obj a p" style="--d:.6s"><div class="obj-in"><div class="obj-face obj-front"><div class="qmark">?</div><p>„Не ми трябва нов телефон.“</p><small>кликни за отговор</small></div>
+        <div class="obj-face obj-back"><h5>Отговор</h5><p>„Тогава насочете спестеното към дома: <b>интернет и ТВ</b>, <b>FBB</b> или <b>NetBox Backup</b> — месеци услуга без допълнителен разход.“</p></div></div></div>
+      <div class="obj a p" style="--d:.75s"><div class="obj-in"><div class="obj-face obj-front"><div class="qmark">?</div><p>„Ще помисля и ще дойда пак.“</p><small>кликни за отговор</small></div>
+        <div class="obj-face obj-back"><h5>Отговор</h5><p>„Black Friday офертата е <b>с ограничен срок</b>. Мога да подготвя всичко сега — подписът отнема няколко минути, а отстъпката е във <b>вашата следваща фактура</b>.“</p></div></div></div>
+      <div class="obj a p" style="--d:.9s"><div class="obj-in"><div class="obj-face obj-front"><div class="qmark">?</div><p>„Договорът ми е чак догодина.“</p><small>кликни за отговор</small></div>
+        <div class="obj-face obj-back"><h5>Отговор</h5><p>„Точно затова е изгодно сега: подновявате <b>с НАД таб</b>, без да губите нищо, и <b>печелите</b> една безплатна такса вместо да чакате.“</p></div></div></div>
+      <div class="obj a p" style="--d:1.05s"><div class="obj-in"><div class="obj-face obj-front"><div class="qmark">?</div><p>„Интернетът ми е от друг доставчик.“</p><small>кликни за отговор</small></div>
+        <div class="obj-face obj-back"><h5>Отговор</h5><p>„Спестеното покрива <b>до 7 такси Net + TV</b>. Една фактура, един оператор, един телефон за поддръжка. Да проверим ли адреса Ви?“</p></div></div></div>
+    </div>
+    <div class="note">Картите се обръщат автоматично; кликни върху карта, за да я обърнеш ръчно.</div>
+  </section>
+
+  <!-- ============ 14. CALCULATOR ============ -->
+  <section class="slide" data-title="Калкулатор">
+    <div class="hdr"><div class="bf-tag a l"><b>Black</b><span>Friday</span></div><h2 class="a r" style="--d:.1s">Колко месеца <em>покрива спестеното</em>?</h2></div>
+    <div class="calc">
+      <div class="calc-in panel a l" style="--d:.2s">
+        <div class="fld"><label>Месечна такса на клиента (100% отстъпка)</label><div class="row"><input type="number" id="cFee" min="0" step="0.01" value="12.26"><span class="u">€</span></div></div>
+        <div class="fld"><label>Prorate (от системата)</label><div class="row"><input type="number" id="cPro" min="0" step="0.01" value="37.74"><span class="u">€</span></div></div>
+        <div class="fld"><label>Месечна такса на новата услуга</label><div class="row"><input type="number" id="cSvc" min="0.5" step="0.01" value="7.00"><span class="u">€</span></div></div>
+        <div class="fld"><label>Бърз избор (въведи цената по актуалния ценоразпис)</label>
+          <div class="presets" id="cPresets"><button data-n="Net + TV">Net + TV</button><button data-n="FBB">FBB</button><button data-n="мобилна услуга (Port In)">Port In</button><button data-n="NetBox Backup">NetBox Backup</button></div></div>
+        <div class="fld"><label>Отстъпка от устройство</label><div class="row"><input type="range" id="cDev" min="0" max="200" step="10" value="200"><span class="u" id="cDevV">200 €</span></div></div>
+      </div>
+      <div class="calc-out panel a r" style="--d:.4s">
+        <div class="kicker">Спестената сума покрива</div>
+        <div class="big-num"><span class="v" id="cMonths">7</span><span class="t" id="cMonthsT">месечни такси на новата услуга</span></div>
+        <div class="months" id="cGrid"></div>
+        <div class="calc-sum">
+          <div><b id="cSaved">50.00 €</b><span>спестена сума</span></div>
+          <div><b id="cDevOut">200 €</b><span>отстъпка от устройство</span></div>
+          <div style="border-color:var(--gold)"><b id="cTotal" class="gold">250 €</b><span>обща полза за клиента</span></div>
+        </div>
+        <div class="calc-say" id="cSay"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 15. CHECKLIST ============ -->
+  <section class="slide" data-title="Чек-лист">
+    <div class="hdr"><div class="bf-tag a l"><b>Black</b><span>Friday</span></div><h2 class="a r" style="--d:.1s">Чек-лист на <em>ТК</em> за всяко посещение</h2></div>
+    <div class="cl-grid">
+      <div class="cl-item a l" style="--d:.3s;--dc:.9s"><div class="box">{{tick}}</div><p>Отвори профила<small>крайна дата, риск, сегмент, средна сметка</small></p></div>
+      <div class="cl-item a r" style="--d:.5s;--dc:1.1s"><div class="box">{{tick}}</div><p>Избери таб: Premium или НАД<small>Retention → Premium · Early_Retention → НАД</small></p></div>
+      <div class="cl-item a l" style="--d:.7s;--dc:1.3s"><div class="box">{{tick}}</div><p>Обясни 100% отстъпка от 1 такса<small>видима в следващата фактура</small></p></div>
+      <div class="cl-item a r" style="--d:.9s;--dc:1.5s"><div class="box">{{tick}}</div><p>Превърни спестеното в стойност<small>„това са X месеца интернет и ТВ“</small></p></div>
+      <div class="cl-item a l" style="--d:1.1s;--dc:1.7s"><div class="box">{{tick}}</div><p>Предложи нова услуга<small>Net + TV, FBB, Port In, FIX втори адрес, NetBox, ICT</small></p></div>
+      <div class="cl-item a r" style="--d:1.3s;--dc:1.9s"><div class="box">{{tick}}</div><p>Предложи устройство<small>до 200€ отстъпка от Black Friday кампанията</small></p></div>
+      <div class="cl-item a l" style="--d:1.5s;--dc:2.1s"><div class="box">{{tick}}</div><p>Обработи възражението със спестената сума<small>отказ, ниво ЕГН, по-висока такса</small></p></div>
+      <div class="cl-item a r" style="--d:1.7s;--dc:2.3s"><div class="box">{{tick}}</div><p>Затвори и напомни<small>подпис + кога ще види отстъпката</small></p></div>
+    </div>
+  </section>
+
+  <!-- ============ 16. FINAL ============ -->
+  <section class="slide" data-title="Финал">
+    <div class="final">
+      <div class="bf-tag a z" style="--d:.1s;transform:rotate(-6deg)"><b>Black</b><span>Friday</span></div>
+      <h1 class="a" style="--d:.3s">Всяко преподписване е <em>още една продажба</em></h1>
+      <div class="eq">
+        <span class="box a p" style="--d:.9s">Premium / НАД таб</span><span class="op a f" style="--d:1.1s">+</span>
+        <span class="box a p" style="--d:1.2s">100% от 1 такса</span><span class="op a f" style="--d:1.4s">+</span>
+        <span class="box a p" style="--d:1.5s">услуга / устройство</span><span class="op a f" style="--d:1.7s">=</span>
+        <span class="box win a p" style="--d:1.9s">доволен клиент</span>
+      </div>
+      <p class="muted a f" style="--d:2.4s;font-size:22px">Сумите и броят такси са по примерите от кампанията — винаги проверявай актуалните условия в системата.</p>
+    </div>
+  </section>
+
+  <div id="nav">
+    <button id="bAuto" title="Автоматично (A)"><svg viewBox="0 0 24 24" fill="#fff"><path d="M7 4l13 8-13 8z"/></svg></button>
+    <button id="bPrev" title="Назад (←)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <span id="counter">1 / 16</span>
+    <button id="bNext" title="Напред (→)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M9 5l7 7-7 7"/></svg></button>
+    <button id="bFull" title="Цял екран (F)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+  /* ---------- Icons (inline SVG templates) ---------- */
+  var S='stroke="#ff2a3f" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"';
+  var ICONS={
+    phone:'<svg viewBox="0 0 60 110"><defs><linearGradient id="gp" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6d7bff"/><stop offset=".5" stop-color="#41c2ff"/><stop offset="1" stop-color="#9b5cff"/></linearGradient></defs><rect x="2" y="2" width="56" height="106" rx="9" fill="#1b1b22"/><rect x="5" y="9" width="50" height="92" rx="5" fill="url(#gp)"/><circle cx="30" cy="5.5" r="1.6" fill="#555"/></svg>',
+    house:'<svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="38" fill="#2a2023"/><path d="M20 42 40 24l20 18v18H20z" fill="#e9e1e2"/><rect x="34" y="46" width="12" height="14" fill="#e3001b"/></svg>',
+    router:'<svg viewBox="0 0 80 80"><path d="M22 60V40M58 60V40" stroke="#e3001b" stroke-width="4"/><rect x="14" y="56" width="52" height="14" rx="4" fill="#e3001b"/><path d="M28 30a17 17 0 0 1 24 0M33 36a9 9 0 0 1 14 0" stroke="#e3001b" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="40" cy="42" r="3" fill="#e3001b"/></svg>',
+    dollar:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+    coins:'<svg viewBox="0 0 48 48" '+S+'><ellipse cx="18" cy="12" rx="12" ry="5"/><path d="M6 12v6c0 2.8 5.4 5 12 5s12-2.2 12-5v-6M6 18v6c0 2.8 5.4 5 12 5"/><ellipse cx="31" cy="28" rx="12" ry="5"/><path d="M19 28v6c0 2.8 5.4 5 12 5s12-2.2 12-5v-6M19 34v6c0 2.8 5.4 5 12 5s12-2.2 12-5v-6"/></svg>',
+    phoneIco:'<svg viewBox="0 0 48 48" '+S+'><rect x="14" y="4" width="20" height="40" rx="4"/><path d="M21 9h6"/><circle cx="24" cy="38" r="1.5"/></svg>',
+    phoneTv:'<svg viewBox="0 0 48 48" '+S+'><rect x="3" y="8" width="13" height="26" rx="3"/><path d="M19 21h5M21.5 18.5v5"/><rect x="27" y="11" width="18" height="13" rx="2"/><path d="M32 30h8M36 24v6"/></svg>',
+    tvs:'<svg viewBox="0 0 48 48" '+S+'><rect x="3" y="9" width="19" height="14" rx="2"/><path d="M9 29h7M12.5 23v6"/><rect x="26" y="9" width="19" height="14" rx="2"/><path d="M32 29h7M35.5 23v6"/></svg>',
+    wifi:'<svg viewBox="0 0 48 48" '+S+'><path d="M6 18a26 26 0 0 1 36 0M12 25a17 17 0 0 1 24 0M18 32a8 8 0 0 1 12 0"/><circle cx="24" cy="38" r="2" fill="#ff2a3f"/></svg>',
+    call:'<svg viewBox="0 0 48 48" '+S+'><path d="M13 6l6 9-4 4a24 24 0 0 0 14 14l4-4 9 6-3 6C26 40 8 22 7 9z"/></svg>',
+    db:'<svg viewBox="0 0 48 48" '+S+'><ellipse cx="22" cy="10" rx="14" ry="5"/><path d="M8 10v22c0 2.8 6.3 5 14 5M36 10v10M8 21c0 2.8 6.3 5 14 5"/><circle cx="35" cy="34" r="8"/><path d="M31.5 34l2.5 2.5 4.5-4.5"/></svg>',
+    bulb:'<svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2zM9 19h6v1.5a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 20.5z"/></svg>',
+    bulbGold:'<svg viewBox="0 0 24 24" fill="#f2b65a"><path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2zM9 19h6v1.5a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 20.5z"/></svg>',
+    tick:'<svg viewBox="0 0 24 24" fill="none" stroke="#ff2a3f" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>'
+  };
+  var deck=document.getElementById('deck');
+  deck.innerHTML=deck.innerHTML.replace(/\{\{(\w+)\}\}/g,function(m,k){return ICONS[k]||m;});
+
+  /* ---------- Background: streaks + confetti ---------- */
+  var st=document.getElementById('streaks');
+  for(var i=0;i<6;i++){var s=document.createElement('div');s.className='streak';s.style.top=(i*170)+'px';s.style.left=(i*120-200)+'px';s.style.animationDelay=(-i*1.6)+'s';s.style.animationDuration=(8+i%3*2)+'s';st.appendChild(s);}
+  var cf=document.getElementById('confetti');
+  for(var j=0;j<22;j++){var c=document.createElement('i');c.className='conf';c.style.left=(Math.random()*100)+'%';
+    c.style.animationDuration=(9+Math.random()*10)+'s';c.style.animationDelay=(-Math.random()*18)+'s';
+    var sc=.5+Math.random()*.8;c.style.width=(10*sc)+'px';c.style.height=(26*sc)+'px';c.style.opacity=.35+Math.random()*.45;cf.appendChild(c);}
+
+  /* ---------- Ring bulbs ---------- */
+  document.querySelectorAll('.ring').forEach(function(r){
+    var size=parseFloat(getComputedStyle(r).width),n=Math.round(size/14),R=size/2-size*.075;
+    for(var k=0;k<n;k++){var b=document.createElement('span');b.className='bulb';
+      b.style.transform='rotate('+(k*360/n)+'deg) translateY(-'+R+'px)';r.appendChild(b);}
+  });
+
+  /* ---------- Wheel ---------- */
+  var segs=['100%','200€','Net+TV','FBB','Port In','NetBox','НАД','Premium'];
+  var plain=['100% отстъпка от 1 такса','до 200€ отстъпка от устройство','Net + TV за дома','FBB интернет','Port In на номер','NetBox Backup','НАД таб','Premium таб'];
+  var wheel=document.getElementById('wheel');
+  segs.forEach(function(t,k){var e=document.createElement('div');e.className='seg';e.innerHTML=t;
+    e.style.transform='rotate('+(k*45)+'deg) translate(0,-128px)';wheel.appendChild(e);});
+  var rot=0;
+  document.getElementById('wheelHub').addEventListener('click',function(ev){
+    ev.stopPropagation();
+    var cur=getComputedStyle(wheel).transform,ang=0;
+    if(cur&&cur!=='none'){var m=cur.match(/matrix\(([^)]+)\)/);if(m){var v=m[1].split(',').map(parseFloat);ang=Math.atan2(v[1],v[0])*180/Math.PI;}}
+    wheel.classList.add('fast');wheel.style.transition='none';wheel.style.transform='rotate('+ang+'deg)';
+    void wheel.offsetWidth;
+    var pick=Math.floor(Math.random()*8);
+    var target=ang+1440+((360-pick*45-((ang%360)+360)%360)+360)%360;
+    wheel.style.transition='';wheel.style.transform='rotate('+target+'deg)';
+    document.getElementById('wheelRes').textContent='';
+    setTimeout(function(){document.getElementById('wheelRes').textContent='🎁 '+plain[pick];},4300);
+  });
+
+  /* ---------- Scaling ---------- */
+  function fit(){var s=Math.min(innerWidth/1600,innerHeight/900);deck.style.transform='scale('+s+')';}
+  addEventListener('resize',fit);fit();
+
+  /* ---------- Count-up ---------- */
+  function countUp(el){
+    var to=parseFloat(el.dataset.count),from=parseFloat(el.dataset.from||0),dec=parseInt(el.dataset.dec||0,10),
+        delay=parseInt(el.dataset.delay||0,10)||(parseFloat(getComputedStyle(el.closest('.a')||el).getPropertyValue('--d'))*1000||0)+300,dur=1300;
+    el.textContent=from.toFixed(dec);
+    clearTimeout(el._t);cancelAnimationFrame(el._r);
+    el._t=setTimeout(function(){var t0=performance.now();
+      (function step(t){var p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,3);el.textContent=(from+(to-from)*e).toFixed(dec);if(p<1)el._r=requestAnimationFrame(step);})(t0);
+    },delay);
+  }
+
+  /* ---------- Slides & fragments ---------- */
+  var slides=[].slice.call(document.querySelectorAll('.slide')),cur=-1,flipTimers=[];
+  var prog=document.getElementById('progress'),ctr=document.getElementById('counter');
+  function frags(i){return [].slice.call(slides[i].querySelectorAll('.frag'));}
+  function go(i,showAll){
+    if(i<0||i>=slides.length)return;
+    if(cur>=0){slides[cur].classList.remove('active');}
+    cur=i;var s=slides[i];
+    frags(i).forEach(function(f){f.classList.toggle('shown',!!showAll);});
+    void s.offsetWidth;s.classList.add('active');
+    s.querySelectorAll('[data-count]').forEach(countUp);
+    prog.style.width=((i+1)/slides.length*100)+'%';ctr.textContent=(i+1)+' / '+slides.length;
+    flipTimers.forEach(clearTimeout);flipTimers=[];
+    var objs=s.querySelectorAll('.obj');
+    objs.forEach(function(o,k){o.classList.remove('flip');flipTimers.push(setTimeout(function(){o.classList.add('flip');},2200+k*1500));});
+    if(s.querySelector('#cGrid'))calc();
+    try{history.replaceState(null,'','#'+(i+1));}catch(e){}
+  }
+  function next(){var f=frags(cur).filter(function(x){return !x.classList.contains('shown');});
+    if(f.length){f[0].classList.add('shown');return true;}
+    if(cur<slides.length-1){go(cur+1);return true;}return false;}
+  function prev(){var f=frags(cur).filter(function(x){return x.classList.contains('shown');});
+    if(f.length){f[f.length-1].classList.remove('shown');return;}
+    if(cur>0)go(cur-1,true);}
+
+  document.addEventListener('keydown',function(e){
+    if(e.target.tagName==='INPUT')return;
+    var k=e.key;
+    if(k==='ArrowRight'||k===' '||k==='PageDown'||k==='Enter'){e.preventDefault();stopAuto();next();}
+    else if(k==='ArrowLeft'||k==='PageUp'||k==='Backspace'){e.preventDefault();stopAuto();prev();}
+    else if(k==='Home'){go(0);}else if(k==='End'){go(slides.length-1,true);}
+    else if(k==='f'||k==='F'){toggleFull();}
+    else if(k==='a'||k==='A'){toggleAuto();}
+  });
+  document.getElementById('bNext').onclick=function(){stopAuto();next();};
+  document.getElementById('bPrev').onclick=function(){stopAuto();prev();};
+  document.getElementById('bFull').onclick=toggleFull;
+  document.getElementById('bAuto').onclick=toggleAuto;
+  function toggleFull(){if(!document.fullscreenElement){(document.documentElement.requestFullscreen||function(){}).call(document.documentElement);}else{document.exitFullscreen();}}
+
+  /* touch swipe */
+  var tx=null;
+  deck.addEventListener('touchstart',function(e){tx=e.touches[0].clientX;},{passive:true});
+  deck.addEventListener('touchend',function(e){if(tx===null)return;var dx=e.changedTouches[0].clientX-tx;tx=null;
+    if(Math.abs(dx)>50){stopAuto();dx<0?next():prev();}},{passive:true});
+
+  /* objection cards: click to flip */
+  document.querySelectorAll('.obj').forEach(function(o){o.addEventListener('click',function(){flipTimers.forEach(clearTimeout);o.classList.toggle('flip');});});
+
+  /* autoplay */
+  var auto=null,bA=document.getElementById('bAuto');
+  function toggleAuto(){auto?stopAuto():startAuto();}
+  function startAuto(){bA.classList.add('on');auto=setInterval(function(){
+      var hasFrag=frags(cur).some(function(x){return !x.classList.contains('shown');});
+      if(hasFrag){next();return;}
+      var s=slides[cur];s._age=(s._age||0)+1;
+      if(s._age>=3){s._age=0;if(!next())go(0);}
+    },2800);}
+  function stopAuto(){if(auto){clearInterval(auto);auto=null;bA.classList.remove('on');}}
+
+  /* ---------- Calculator ---------- */
+  var $=function(id){return document.getElementById(id);};
+  var svcName='новата услуга';
+  function calc(){
+    var fee=Math.max(0,parseFloat($('cFee').value)||0),pro=Math.max(0,parseFloat($('cPro').value)||0),
+        svc=Math.max(.5,parseFloat($('cSvc').value)||.5),dev=parseInt($('cDev').value,10)||0;
+    var saved=fee+pro,months=Math.floor(saved/svc+1e-9);
+    $('cMonths').textContent=months;
+    $('cMonthsT').textContent=(months===1?'месечна такса':'месечни такси')+' за '+svcName;
+    $('cSaved').textContent=saved.toFixed(2)+' €';$('cDevV').textContent=dev+' €';$('cDevOut').textContent=dev+' €';
+    $('cTotal').textContent=Math.round(saved+dev)+' €';
+    var g=$('cGrid'),shown=Math.min(Math.max(months,12),24);g.innerHTML='';
+    for(var m=1;m<=shown;m++){var d=document.createElement('div');d.className='mo';d.textContent=m;g.appendChild(d);
+      (function(d,m){setTimeout(function(){if(m<=months)d.classList.add('on');},60*m);})(d,m);}
+    $('cSay').textContent='„С отстъпката спестявате '+saved.toFixed(0)+'€ — с тях покривате '+months+' '+(months===1?'месечна такса':'месечни такси')+' за '+svcName+'.“';
+  }
+  ['cFee','cPro','cSvc','cDev'].forEach(function(id){$(id).addEventListener('input',calc);});
+  document.querySelectorAll('#cPresets button').forEach(function(b){b.addEventListener('click',function(){
+    document.querySelectorAll('#cPresets button').forEach(function(x){x.classList.remove('on');});
+    b.classList.add('on');svcName=b.dataset.n;$('cSvc').focus();calc();});});
+
+  /* ---------- Start ---------- */
+  var h=parseInt(location.hash.slice(1),10);
+  go(h>=1&&h<=slides.length?h-1:0);
+})();
+</script>
+</body>
+</html>
