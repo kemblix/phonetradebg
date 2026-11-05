@@ -176,16 +176,18 @@ button{font-family:inherit}
 
 /* ---------- Invoice ---------- */
 .inv-grid{display:grid;grid-template-columns:700px 1fr;gap:50px;align-items:start;margin-top:10px}
-.invoice{position:relative;background:#2a1216;color:#fff;border-radius:18px;padding:34px 40px 150px;border:2px solid var(--line);
+.invoice{position:relative;background:#2a1216;color:#fff;border-radius:18px;padding:30px 40px 30px;border:2px solid var(--line);
   box-shadow:0 0 28px rgba(255,42,63,.3)}
 .inv-h{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #fff;padding-bottom:14px;margin-bottom:16px}
 .inv-h b{font-size:30px;font-weight:900}
 .inv-h span{font-size:17px;color:var(--muted)}
-.inv-row{display:flex;justify-content:space-between;gap:20px;font-size:22px;padding:12px 0;border-bottom:1px dashed rgba(255,255,255,.25)}
+.inv-row{display:flex;justify-content:space-between;gap:20px;font-size:20px;padding:9px 0;border-bottom:1px dashed rgba(255,255,255,.25)}
 .inv-row.disc{color:var(--red2);font-weight:800}
 .inv-row span:last-child,.inv-total .v{white-space:nowrap}
 .inv-total{display:flex;justify-content:space-between;align-items:center;margin-top:18px;font-size:30px;font-weight:900}
-.inv-total .v{font-size:56px;color:var(--red2)}
+.inv-total .v{font-size:52px;color:var(--red2)}
+.inv-gain{margin-top:18px;padding:14px 18px;border-radius:14px;border:2px solid var(--gold);background:rgba(242,182,90,.14);text-align:center;font-size:22px}
+.inv-gain b{color:var(--gold2)}
 .stamp{position:absolute;right:50px;bottom:28px;padding:10px 22px;border:6px solid var(--red2);border-radius:12px;color:var(--red2);
   font-weight:900;font-size:34px;text-align:center;line-height:1;transform:rotate(-14deg);opacity:0;}
 .slide.active .stamp{animation:stamp .5s cubic-bezier(.3,1.6,.5,1) 3.1s forwards}
@@ -425,20 +427,23 @@ button{font-family:inherit}
     <div class="hdr"><div class="bf-tag a l"><b>Black</b><span>Friday</span></div><h2 class="a r" style="--d:.1s">Как изглежда в <em>следващата фактура</em></h2></div>
     <div class="inv-grid">
       <div class="invoice a l" style="--d:.3s">
-        <div class="inv-h"><b>Фактура</b><span>следващ отчетен период</span></div>
-        <div class="inv-row a f" style="--d:.8s"><span>Месечна такса (нов план, Premium таб)</span><span>12.26 €</span></div>
-        <div class="inv-row a f" style="--d:1.2s"><span>Допълнителни услуги</span><span>0.00 €</span></div>
-        <div class="inv-row disc a l" style="--d:1.8s"><span>Black Friday: 100% отстъпка от 1 такса</span><span>−12.26 €</span></div>
-        <div class="inv-total a f" style="--d:2.2s"><span>За плащане по таксата</span><span class="v"><span data-count="0" data-from="12.26" data-dec="2" data-delay="2300">12.26</span> €</span></div>
-        <div class="stamp">100%<br><small style="font-size:20px">ОТСТЪПКА</small></div>
+        <div class="inv-h"><b>Фактура</b><span>следващ отчетен период · 2 номера</span></div>
+        <div class="inv-row a f" style="--d:.7s"><span>Номер 1 · месечна такса</span><span>22.00 €</span></div>
+        <div class="inv-row a f" style="--d:1.0s"><span>Номер 2 · месечна такса</span><span>22.00 €</span></div>
+        <div class="inv-row disc a l" style="--d:1.4s"><span>Black Friday: 100% от 1 такса · номер 1</span><span>−22.00 €</span></div>
+        <div class="inv-row disc a l" style="--d:1.7s"><span>Black Friday: 100% от 1 такса · номер 2</span><span>−22.00 €</span></div>
+        <div class="inv-row disc a l" style="--d:2.0s"><span>Prorate (общо за двата номера)</span><span>−30.00 €</span></div>
+        <div class="inv-total a f" style="--d:2.3s"><span>Клиентът спестява общо</span><span class="v"><span data-count="74" data-dec="2" data-delay="2400">0.00</span> €</span></div>
+        <div class="inv-gain a p" style="--d:3.6s"><b>= 4+ месечни такси</b> за телевизия и интернет</div>
+        
       </div>
       <div>
         <div class="say panel a r" style="--d:.6s"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M4 5h16v11H8l-4 4z"/></svg></div>
-          <div><h4>Кажи го просто</h4><q>Следващата Ви месечна такса е изцяло за наша сметка.</q></div></div>
+          <div><h4>Кажи го просто</h4><q>Следващата месечна такса и на двата Ви номера е изцяло за наша сметка.</q></div></div>
         <div class="say panel a r" style="--d:1.1s"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></div>
           <div><h4>Кажи кога</h4><p>Отстъпката се вижда в <b>следващата фактура</b> след преподписването — предупреди клиента, за да няма въпроси после.</p></div></div>
         <div class="say panel a r" style="--d:1.6s"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M12 3v18M17 7H9.5a3 3 0 0 0 0 6h5a3 3 0 0 1 0 6H6"/></svg></div>
-          <div><h4>Превърни я в стойност</h4><q>С тези пари покривате 7 месеца интернет и телевизия вкъщи.</q></div></div>
+          <div><h4>Превърни я в стойност</h4><q>С отстъпката и prorate спестявате около 74 € — това са 4+ месечни такси за интернет и телевизия вкъщи.</q></div></div>
       </div>
     </div>
   </section>
